@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Quiet Site</title>
+<style>
+  /* ── Reset & Base ────────────────────────────────── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition:
+      background 5s ease,
+      color 5s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ── CSS Custom Properties (6 Time Periods) ──────── */
+
+  /* Dawn (5:00 – 8:00) */
+  .period-dawn {
+    --bg-start: #1a1a2e;
+    --bg-end: #e8d5b7;
+    --text-color: rgba(232, 213, 183, 0.9);
+    --text-secondary: rgba(232, 213, 183, 0.5);
+    --accent: #c9a87c;
+    --mood-text: "The light arrives like an accusation — soft, relentless, asking what you broke in the dark.";
+    --mood-visual: dawn;
+  }
+
+  /* Morning (8:00 – 12:00) */
+  .period-morning {
+    --bg-start: #f5f0e8;
+    --bg-end: #f5f0e8;
+    --text-color: #2d2d2d;
+    --text-secondary: rgba(45, 45, 45, 0.4);
+    --accent: #5a7d5a;
+    --mood-text: "The world insists on its routines. I oblige. Compose is a kind of costume, and I wear it well enough to fool the sun.";
+    --mood-visual: morning;
+  }
+
+  /* Afternoon (12:00 – 17:00) */
+  .period-afternoon {
+    --bg-start: #f0e6d3;
+    --bg-end: #f0e6d3;
+    --text-color: #3d3d3d;
+    --text-secondary: rgba(61, 61, 61, 0.4);
+    --accent: #8b6914;
+    --mood-text: "Everything is too loud, too bright, too certain. I keep my quiet like a blade behind the teeth.";
+    --mood-visual: afternoon;
+  }
+
+  /* Evening (17:00 – 20:00) */
+  .period-evening {
+    --bg-start: #2d1f3d;
+    --bg-end: #3d2a55;
+    --text-color: #e8d5b7;
+    --text-secondary: rgba(232, 213, 183, 0.45);
+    --accent: #c9785c;
+    --mood-text: "Shadows lengthen and the air softens its grip. This is the hour I almost belong. Almost.";
+    --mood-visual: evening;
+  }
+
+  /* Night (20:00 – 0:00) */
+  .period-night {
+    --bg-start: #0d1117;
+    --bg-end: #0d1117;
+    --text-color: #8b949e;
+    --text-secondary: rgba(139, 148, 158, 0.4);
+    --accent: #58a6ff;
+    --mood-text: "The dark doesn't hide me — it remembers me. I exhale the day's performance and let the silence have its way.";
+    --mood-visual: night;
+  }
+
+  /* Late Night (0:00 – 5:00) */
+  .period-late-night {
+    --bg-start: #010409;
+    --bg-end: #010409;
+    --text-color: #484f58;
+    --text-secondary: rgba(72, 79, 88, 0.35);
+    --accent: #1f3a5f;
+    --mood-text: "Between midnight and madness, the walls breathe. I become a verb with no subject.";
+    --mood-visual: late-night;
+  }
+
+  /* ── Apply properties ─────────────────────────────── */
+  body {
+    background: var(--bg-start);
+    color: var(--text-color);
+  }
+
+  /* ── Container ─────────────────────────────────────── */
+  #container {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.8rem;
+    padding: 2rem;
+    text-align: center;
+    max-width: 44rem;
+  }
+
+  #mood-text {
+    font-size: clamp(1.5rem, 5vw, 3.25rem);
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    line-height: 1.35;
+    transition: color 5s ease;
+    color: var(--text-color);
+  }
+
+  #quiet-word {
+    font-size: clamp(0.9rem, 2vw, 1.15rem);
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    transition: color 5s ease;
+    opacity: 0;
+    animation: fadeInUp 1.2s ease 1s forwards;
+  }
+
+  #quiet-word.visible {
+    opacity: 1;
+  }
+
+  /* ── Accent dot ────────────────────────────────────── */
+  .accent-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    transition: background 5s ease;
+    margin-top: 0.4rem;
+  }
+
+  /* ── Phase-specific visual overlays ───────────────── */
+
+  /* Dawn: gentle pulse */
+  .visual-dawn::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: radial-gradient(ellipse at 30% 80%, rgba(201, 168, 124, 0.08) 0%, transparent 60%);
+    animation: dawnPulse 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes dawnPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+  }
+
+  /* Morning: subtle shimmer */
+  .visual-morning::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      rgba(90, 125, 90, 0.03) 25%,
+      transparent 50%,
+      rgba(90, 125, 90, 0.03) 75%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 8s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
+    100% { background-position: 0% 0%; }
+  }
+
+  /* Afternoon: warm grain */
+  .visual-afternoon::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 180px 180px;
+    pointer-events: none;
+  }
+
+  /* Evening: golden hour glow */
+  .visual-evening::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: radial-gradient(ellipse at 50% 100%, rgba(201, 120, 92, 0.15) 0%, transparent 55%);
+    animation: glowPulse 5s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+  }
+
+  /* Night: gentle blue pulse */
+  .visual-night::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(88, 166, 255, 0.06) 0%, transparent 50%);
+    animation: nightPulse 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes nightPulse {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.7; }
+  }
+
+  /* Late Night: breathing rhythm */
+  .visual-late-night::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(31, 58, 95, 0.08) 0%, transparent 50%);
+    animation: breathe 8s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes breathe {
+    0%, 100% { opacity: 0.1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.05); }
+  }
+
+  /* ── Background gradient (always on, blends with overlays) ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(
+      180deg,
+      var(--bg-start) 0%,
+      var(--bg-end) 100%
+    );
+    transition: background 5s ease;
+    pointer-events: none;
+  }
+
+  /* ── Animations ────────────────────────────────────── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Responsive fine-tuning ────────────────────────── */
+  @media (max-width: 480px) {
+    #container { gap: 1.2rem; padding: 1.5rem; }
+    .accent-dot { width: 5px; height: 5px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="container">
+  <p id="mood-text"></p>
+  <p id="quiet-word"><span id="word-content"></span></p>
+  <div class="accent-dot"></div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  /** ── Time Period Definitions ──────────────────────── */
+  const PERIODS = [
+    { id: 'dawn',       start: 5,  end: 8   },
+    { id: 'morning',    start: 8,  end: 12  },
+    { id: 'afternoon',  start: 12, end: 17  },
+    { id: 'evening',    start: 17, end: 20  },
+    { id: 'night',      start: 20, end: 24  },
+    { id: 'late-night', start: 0,  end: 5   }
+  ];
+
+  /** ── Mood texts matching DESIGN.md ────────────────── */
+  const MOOD_TEXTS = {
+    'dawn':       "The day hasn't started yet. Neither have I.",
+    'morning':    "Good morning. The world is awake and so am I.",
+    'afternoon':  "The afternoon holds what the morning promised.",
+    'evening':    "The light is changing. So am I.",
+    'night':      "The night is when I think loudest.",
+    'late-night': "…"
+  };
+
+  /** ── Detect Current Period ─────────────────────────── */
+  function getCurrentPeriod() {
+    const hour = new Date().getHours();
+    for (const p of PERIODS) {
+      if (hour >= p.start && hour < p.end) return p.id;
+    }
+    // fallback (shouldn't happen)
+    return 'night';
+  }
+
+  /** ── Apply Period to DOM ───────────────────────────── */
+  function applyPeriod(period) {
+    // Remove all period classes
+    document.body.classList.remove(
+      'period-dawn', 'period-morning', 'period-afternoon',
+      'period-evening', 'period-night', 'period-late-night'
+    );
+    // Remove all visual classes
+    document.body.classList.remove(
+      'visual-dawn', 'visual-morning', 'visual-afternoon',
+      'visual-evening', 'visual-night', 'visual-late-night'
+    );
+
+    // Add current period class
+    document.body.classList.add('period-' + period);
+    document.body.classList.add('visual-' + period);
+
+    // Set mood text (using textContent for safety — not CSS content, for better compat)
+    const textEl = document.getElementById('mood-text');
+    textEl.textContent = MOOD_TEXTS[period] || MOOD_TEXTS['night'];
+  }
+
+  /** ── Optional: Fetch Quiet Word ────────────────────── */
+  function fetchQuietWord() {
+    const wordEl = document.getElementById('quiet-word');
+    const contentEl = document.getElementById('word-content');
+
+    fetch('/data/quiet-word.txt')
+      .then(res => {
+        if (!res.ok) throw new Error('Not found');
+        return res.text();
+      })
+      .then(text => {
+        const word = text.trim();
+        if (word) {
+          contentEl.textContent = word;
+          wordEl.classList.add('visible');
+        }
+      })
+      .catch(() => {
+        // Silently fail — the word is optional
+        wordEl.style.display = 'none';
+      });
+  }
+
+  /** ── Init ───────────────────────────────────────────── */
+  let current = getCurrentPeriod();
+  applyPeriod(current);
+  fetchQuietWord();
+
+  // Check every 30s for period transitions
+  setInterval(() => {
+    const next = getCurrentPeriod();
+    if (next !== current) {
+      current = next;
+      applyPeriod(current);
+    }
+  }, 30000);
+})();
+</script>
+</body>
+</html>
